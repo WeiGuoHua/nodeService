@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>简易聊天室</title>
+    <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .window {
+        width: 500px;
+        height: 350px;
+        border: 2px solid #6d6565;
+				border-radius: 6px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- <button type="button" onclick="clickFun()">click</button> -->
+    <h1>欢迎来到聊天室</h1>
+    <div class="window"></div>
+    <div id="usernum"></div>
+    <form id="message-form" action="#">
+      <textarea id="message" rows="4" cols="30"></textarea>
+      <div>
+        <input type="submit" value="发送消息" id="submit" />
+      </div>
+    </form>
+    <script src="http://10.3.108.54:3001/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io();
+    </script>
+  </body>
+
+  <script>
+    //指示浏览器连接位于http://10.3.108.54:3001的SocketIO服务器
+    var socket = io.connect('http://10.3.108.54:3001');
+    //监听服务器广播的usersnum事件
+    socket.on('usernum', function (data) {
+      console.log("🚀 ~ file: index.html ~ line 47 ~ data", data)
+      $('#usernum').html('在线人数:' + data.number);
+    });
+    socket.on('currentTime', (data) => {
+      $('form').after('<p>' + data + '</p>');
+    });
+    var message = document.getElementById('message');
+    var submit = document.getElementById('submit');
+    $('#message').keydown(function (e) {
+      // 当 keyCode 是13时,是回车操作
+      if (e.keyCode == 13) {
+        // 编写业务代码...
+        e.preventDefault();
+        keydown();
+        // 取消之前的keydown事件
+      }
+    });
+    $(message.form).submit(keydown);
+    //客户端监听push message事件,这是服务器端广播的,广播给除了发送消息的浏览器之外的全部浏览器
+    socket.on('push message', function (data) {
+      $('form').before('<p>' + data + '</p>');
+    });
+    function keydown() {
+      //表单提交发送信息给SocketIO服务器,服务器端监听message事件即可获取到信息.
+      if (!message.value) {
+        alert('消息不能为空！');
+        message.focus();
+        return;
+      } else {
+        socket.emit('message', message.value);
+        message.value = '';
+        message.focus();
+      }
+
+      return false;
+    }
+    // function clickFun() {
+    //   $.ajax({
+    //     type: 'get',
+    //     url: 'http://localhost:3001/123',
+    //     success: function (data) {
+    //       console.log(data, '1');
+    //     },
+    //     error: function (err) {
+    //       console.log(err);
+    //     },
+    //   });
+    // }
+    // $(function () {
+    //   //get请求
+    //   $.ajax({
+    //     type: 'get',
+    //     url: 'http://localhost:3001/123',
+    //     success: function (data) {
+    //       console.log(data, '1');
+    //     },
+    //     error: function (err) {
+    //       console.log(err);
+    //     },
+    //   });
+    //   //post请求
+    //   $.ajax({
+    //     type: 'post',
+    //     url: 'http://localhost:3001/wdltest',
+    //     data: {
+    //       name: 'wdl',
+    //       pass: '123',
+    //     },
+    //     success: function (data) {
+    //       console.log(data, '2');
+    //     },
+    //     error: function (err) {
+    //       console.log(err);
+    //     },
+    //   });
+    // });
+  </script>
+</html>
